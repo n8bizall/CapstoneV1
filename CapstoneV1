@@ -1,0 +1,97 @@
+use master;
+go
+drop database if exists PRTEST;
+go
+create database PRTEST;
+go
+use PRTEST;
+go
+create table [User] (
+Id int not null primary key identity(1,1),
+UserName nvarchar(30) not null unique(UserName),
+[Password] nvarchar(30) not null,
+FirstName nvarchar(30) not null,
+LastName nvarchar(30) not null,
+Phone nvarchar(12),
+Email nvarchar(80),
+IsReviewer bit not null default(0),
+IsAdmin bit not null default(0)
+) 
+go
+
+insert into [User](UserName, [Password], FirstName, LastName, Phone, Email, IsReviewer, IsAdmin)
+values('NB', 'password', 'Nate', 'Bucher', '937-270-5192', 'n@b.com', '1', '1');
+insert into [User] (UserName, [Password], FirstName, LastName, Phone, Email, IsReviewer, IsAdmin)
+values('CB', 'password', 'Chris', 'Brown', '937-270-5002', 'c@b.com', '0', '1');
+insert into [User] (UserName, [Password], FirstName, LastName, Phone, Email, IsReviewer, IsAdmin)
+values('MD', 'password', 'Mike', 'Ducher', '937-980-5192', 'm@b.com', '1', '0');
+insert into [User] (UserName, [Password], FirstName, LastName, Phone, Email, IsReviewer, IsAdmin)
+values('GS', 'password', 'Greg', 'Sucher', '937-272-5192', 'g@s.com', '0', '1');
+insert into [User] (UserName, [Password], FirstName, LastName, Phone, Email, IsReviewer, IsAdmin)
+values('SB', 'password', 'Steve', 'Beer', '937-330-5192', 's@b.com', '0', '0')
+go
+
+create table Vendor (
+Id int not null primary key identity(1,1),
+Code nvarchar(10) not null unique(Code),
+[Name] nvarchar(30) not null,
+[Address] nvarchar(30) not null,
+City nvarchar(30) not null,
+[State] nvarchar(2) not null,-- come back to this
+Zip nvarchar(10) not null,
+Phone nvarchar(12),
+Email nvarchar(80),
+IsRecommended bit not null default 0,
+Active bit not null default 0
+)
+go
+
+insert into Vendor (Code, [Name], Address, City, [State], Zip, Phone, Email)
+values('A1', 'Ajax', '123 Maple', 'Cincinnati', 'OH', '45402', '937-499-1212', 'ajax@a.com'); 
+insert into Vendor (Code, [Name], Address, City, [State], Zip, Phone, Email)
+values('B1', 'Manners', '23 First', 'Cincinnati', 'OH', '45442', '937-779-1212', 'Manner@a.com'); 
+insert into Vendor (Code, [Name], Address, City, [State], Zip, Phone, Email)
+values('C1', 'Pappadueax', '1200 Ridge', 'Cincinnati', 'OH', '45412', '937-999-1212', 'p@a.com'); 
+go
+
+create table Product (
+Id int not null primary key identity(1,1),
+[Name] nvarchar(130) not null,
+VendorPartNumber nvarchar(50) not null,
+Price decimal(7,2),
+Unit nvarchar(10) not null,
+PhotoPath nvarchar(255),
+VendorId int not null foreign key references Vendor(Id),
+Active bit not null default 1
+)
+go
+
+insert into Product ([Name], VendorPartNumber, Price, Unit, VendorId) values ('Chair', 'ABa', 500.00, 'Sales', 1)
+insert into Product ([Name], VendorPartNumber, Price, Unit, VendorId) values ('Bed', 'UHH', 300.00, 'Ops', 2)
+insert into Product ([Name], VendorPartNumber, Price, Unit, VendorId) values ('Desk', 'OOHDSG', 700.00, 'CusSer', 3)
+
+go
+create table PurchaseRequest (
+Id int not null primary key identity(1,1),
+[Description] nvarchar(80) not null,
+Justification nvarchar(80) ,
+DateNeeded date not null default DATEADD(wk, 1, GETDATE() ),
+DeliveryMode nvarchar(25),
+[Status] nvarchar(10)not null default 'New',
+Total  decimal(10,2) not null default 0.0, 
+UserId int not null foreign key references [User](Id)
+)
+go
+
+insert into PurchaseRequest ([Description], Justification, UserId) values('I need a chair', 'Back Pain', 1)
+insert into PurchaseRequest ([Description], Justification, UserId) values('I need a bed', 'Tired', 2)
+insert into PurchaseRequest ([Description], Justification, UserId) values('I need a pillow', 'For my Head', 3)
+go
+
+create table PurchaseRequestLineItems(
+Id int not null primary key identity(1,1),
+PurchaseRequestId int not null foreign key references PurchaseRequest(Id),
+ProductId int not null foreign key references Product(Id),
+Quantity int not null default 1
+)
+insert into PurchaseRequestLineItems (PurchaseRequestId, ProductId) values(1, 1) 
